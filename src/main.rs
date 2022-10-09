@@ -23,14 +23,6 @@ impl Node {
             folders: Vec::new(),
         }
     }
-
-    pub fn is_leaf(&self) -> bool {
-        if self.folders.len() == 0 {
-            true
-        } else {
-            false
-        }
-    }
     
     pub fn burrow(&mut self) {
         let mut contents: Vec<PathBuf> = ls_dir(&self.path);
