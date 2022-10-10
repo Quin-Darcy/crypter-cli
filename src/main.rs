@@ -8,10 +8,10 @@ use std::io::Write;
 use std::fs::File;
 use std::path::PathBuf;
 use std::fs::OpenOptions;
+use serde::{Serialize, Deserialize};
 
 
-
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 struct Node {
     path: PathBuf,
     files: Vec<PathBuf>,
@@ -67,14 +67,6 @@ impl Node {
         }
         
     }
-
-    pub fn show(&self) {
-        println!("PATH: {}", self.path.as_path().display());
-        println!("HASHES: {:?}", self.hashes);
-        for folder in &self.folders {
-            folder.show();
-        }
-    }
 }
 
 fn ls_dir(path: &PathBuf) -> Vec<PathBuf> {
@@ -98,11 +90,13 @@ fn main() {
    
     node.burrow();
     
-    //let hash_path: &str = "/home/nimrafets/projects/rust/binaries/shadir_walker/hashes.txt";
     let mut to_file: File = match File::create(hash_path) {
         Ok(_file) => _file,
         Err(_e) => panic!("Error creating file {}", hash_path),
     };
     
-    node.write_hashes(hash_path);
+    let serialized = serde_json::to_string(&node).unwrap();
+    write!(to_file, "{}", serialized).unwrap();
+
+    println!("\n{:0x}", shasher::get_hash(&102, hash_path));
 }
