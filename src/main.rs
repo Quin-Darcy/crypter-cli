@@ -2,13 +2,12 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 use std::fs;
-use std::io;
+use std::env;
 use shasher;
 use std::io::Write;
 use std::fs::File;
 use std::path::PathBuf;
 use std::fs::OpenOptions;
-use std::io::prelude::*;
 
 
 
@@ -89,13 +88,17 @@ fn ls_dir(path: &PathBuf) -> Vec<PathBuf> {
 }
 
 fn main() {
-    let root_path: PathBuf = PathBuf::from("/home/nimrafets/projects/rust/binaries/shadir_walker");
-    let contents: Vec<PathBuf> = ls_dir(&root_path);
-    let mut node: Node = Node::new(root_path);
+    let args: Vec<String> = env::args().collect();
+    let root_path: &str = &args[1];
+    let hash_path: &str = &args[2];
+
+    let root: PathBuf = PathBuf::from(root_path);
+    let contents: Vec<PathBuf> = ls_dir(&root);
+    let mut node: Node = Node::new(root);
    
     node.burrow();
     
-    let hash_path: &str = "/home/nimrafets/projects/rust/binaries/shadir_walker/hashes.txt";
+    //let hash_path: &str = "/home/nimrafets/projects/rust/binaries/shadir_walker/hashes.txt";
     let mut to_file: File = match File::create(hash_path) {
         Ok(_file) => _file,
         Err(_e) => panic!("Error creating file {}", hash_path),
