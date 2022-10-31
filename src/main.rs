@@ -12,7 +12,7 @@ use rayon::prelude::*;
 use std::collections::HashMap;
 
 
-const MAX_DEPTH: u32 = 3;
+const MAX_DEPTH: u32 = 6;
 
 #[derive(Debug)]
 struct Node {
@@ -99,12 +99,10 @@ fn ls_dir(path: &PathBuf) -> Vec<PathBuf> {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let root_path: &str = &args[1];
+    let root_path: PathBuf = PathBuf::from(&args[1]);
     let hash_path: &str = &args[2];
 
-    let root: PathBuf = PathBuf::from(root_path);
-    //let root: PathBuf = PathBuf::from("/home/arbegla/Projects");
-    let mut node: Node = Node::new(root);
+    let mut node: Node = Node::new(root_path);
     let mut key_value_pairs: Vec<(&String, &String)> = Vec::new();
     let mut file_hashmap: HashMap<&String, &String>;
 
