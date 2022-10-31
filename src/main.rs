@@ -9,12 +9,16 @@ use std::fs::File;
 use std::path::PathBuf;
 use std::fs::OpenOptions;
 use rayon::prelude::*;
+use std::collections::HashMap;
 
+
+const MAX_DEPTH: u32 = 3;
 
 #[derive(Debug)]
 struct Node {
     path: PathBuf,
-    files: Vec<PathBuf>,
+    depth: u32,
+    files: Vec<String>,
     hashes: Vec<String>,
     folders: Vec<Box<Node>>,
 }
@@ -23,6 +27,7 @@ impl Node {
     pub fn new(path: PathBuf) -> Self {
         Node {
             path: path,
+            depth: 0,
             files: Vec::new(),
             hashes: Vec::new(),
             folders: Vec::new(),
@@ -31,7 +36,8 @@ impl Node {
     
     pub fn burrow(&mut self) {
         let mut data = ls_dir(&self.path);
-        self.files = data.par_iter().filter(|x| x.is_file()).map(|y| y.to_path_buf()).collect();
+        
+        self.files = data.par_iter().filter(|x| x.is_file()).map(|y| y.as_path().display().to_string()).collect();
         
         self.hashes.par_extend(
             data.par_iter()
@@ -43,33 +49,41 @@ impl Node {
         
         self.folders.par_extend(
             data.par_iter()
-            .filter(|x| x.is_dir())
+            .filter(|x| x.is_dir() && self.depth < MAX_DEPTH)
             .map(|y| {
                 let mut new_node = Node::new((*y).to_path_buf());
+                new_node.depth = self.depth+1;
                 new_node.burrow();
                 Box::new(new_node)
             }));
     } 
+}
 
-    pub fn write_hashes(&self, path: &str) {
-        let mut file = OpenOptions::new()
-                        .write(true)
-                        .append(true)
-                        .open(path)
-                        .unwrap();
+fn write_file_hashes(file_hashmap: HashMap<&String, &String>, path: &str) {
+    let mut file = OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open(path)
+        .unwrap();
+        
+    for (key, value) in &file_hashmap {
+        if let Err(e) = writeln!(file, "{}:{}", key, value) {
+            eprintln!("Could not write to file: {}", e);
+        }
+    }
+} 
 
-        for hash in &self.hashes {
-            if let Err(e) = writeln!(file, "{}", hash) {
-                eprintln!("Couldn't write to file: {}", e);
-            }
-        }
-        
-        if self.folders.len() > 0 {
-            for folder in &self.folders {
-                folder.write_hashes(path);
-            }
-        }
-        
+fn get_key_value_pairs<'a>(node: &'a Node, key_value_pairs: &mut Vec<(&'a String, &'a String)>) {
+    let keys = &node.files;
+    let values = &node.hashes;
+    let zipped: Vec<(&String, &String)> = keys.par_iter().zip(values).collect::<Vec<(&String, &String)>>();
+
+    key_value_pairs.extend(zipped);
+    key_value_pairs.to_vec();
+
+    // Make this loop faster!!
+    for n in &node.folders {
+        get_key_value_pairs(&n, key_value_pairs);
     }
 }
 
@@ -84,25 +98,24 @@ fn ls_dir(path: &PathBuf) -> Vec<PathBuf> {
 }
 
 fn main() {
-    //let args: Vec<String> = env::args().collect();
-    //let root_path: &str = &args[1];
-    //let hash_path: &str = &args[2];
+    let args: Vec<String> = env::args().collect();
+    let root_path: &str = &args[1];
+    let hash_path: &str = &args[2];
 
-    let root: PathBuf = PathBuf::from("/home/arbegla/Projects");
+    let root: PathBuf = PathBuf::from(root_path);
+    //let root: PathBuf = PathBuf::from("/home/arbegla/Projects");
     let mut node: Node = Node::new(root);
-   
+    let mut key_value_pairs: Vec<(&String, &String)> = Vec::new();
+    let mut file_hashmap: HashMap<&String, &String>;
+
     node.burrow();
-    println!("{:?}", node);
+    get_key_value_pairs(&node, &mut key_value_pairs);
+    file_hashmap = key_value_pairs.iter().map(|kv| {return *kv}).collect();
     
-    /*
     let mut to_file: File = match File::create(hash_path) {
         Ok(_file) => _file,
         Err(_e) => panic!("Error creating file {}", hash_path),
     };
     
-    let serialized = serde_json::to_string(&node).unwrap();
-    write!(to_file, "{}", serialized).unwrap();
-
-    println!("\n{:0x}", shasher::get_hash(&102, hash_path));
-    */
+    write_file_hashes(file_hashmap, hash_path);
 }
