@@ -9,3 +9,10 @@ edition = "2021"
 [dependencies]
 rayon = "1.5.3"
 shasher = {git = "https://github.com/Quin-Darcy/shasher.git", branch = "master"}
+tcp_client = {git = "https://github.com/Quin-Darcy/tcp_client.git", branch = "master"}
+
+[profile.dev]
+overflow-checks = false
+
+[profile.release]
+debug = true

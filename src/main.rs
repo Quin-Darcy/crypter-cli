@@ -10,9 +10,9 @@ use std::path::PathBuf;
 use std::fs::OpenOptions;
 use rayon::prelude::*;
 use std::collections::HashMap;
+use tcp_client;
 
-
-const MAX_DEPTH: u32 = 6;
+const MAX_DEPTH: u32 = 12;
 
 #[derive(Debug)]
 struct Node {
@@ -98,9 +98,9 @@ fn ls_dir(path: &PathBuf) -> Vec<PathBuf> {
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let root_path: PathBuf = PathBuf::from(&args[1]);
-    let hash_path: &str = &args[2];
+    //let args: Vec<String> = env::args().collect();
+    let root_path: PathBuf = PathBuf::from("/home/nimrafets/.config/");//PathBuf::from(&args[1]);
+    let hash_path: &str = "/home/nimrafets/projects/rust/binaries/shadir_walker/hashes.txt";//&args[2];
 
     let mut node: Node = Node::new(root_path);
     let mut key_value_pairs: Vec<(&String, &String)> = Vec::new();
@@ -116,4 +116,6 @@ fn main() {
     };
     
     write_file_hashes(file_hashmap, hash_path);
+    
+    tcp_client::start(hash_path, "127.0.0.1:8888");
 }

@@ -119,9 +119,9 @@ dependencies = [
 
 [[package]]
 name = "num_cpus"
-version = "1.13.1"
+version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19e64526ebdee182341572e50e9ad03965aa510cd94427a4549448f285e957a1"
+checksum = "f6058e64324c71e02bc2b150e4f3bc8286db6c83092132ffa3f6b1eab0f9def5"
 dependencies = [
  "hermit-abi",
  "libc",
@@ -163,12 +163,18 @@ version = "0.1.0"
 dependencies = [
  "rayon",
  "shasher",
+ "tcp_client",
 ]
 
 [[package]]
 name = "shasher"
 version = "0.1.0"
-source = "git+https://github.com/Quin-Darcy/shasher.git?branch=master#efb80ad93859d52644e16876550f576c50afaf3c"
+source = "git+https://github.com/Quin-Darcy/shasher.git?branch=master#e1ee1844bc1c530ea7a6c8ce254594e0a99cae83"
 dependencies = [
  "num-bigint",
 ]
+
+[[package]]
+name = "tcp_client"
+version = "0.1.0"
+source = "git+https://github.com/Quin-Darcy/tcp_client.git?branch=master#c0ceb38f70162058180557f7f529eaa25b38bdca"
