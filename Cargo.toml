@@ -1,5 +1,5 @@
 [package]
-name = "shadir_walker"
+name = "encrypter"
 version = "0.1.0"
 authors = ["runner"]
 edition = "2021"
@@ -9,7 +9,7 @@ edition = "2021"
 [dependencies]
 rayon = "1.5.3"
 shasher = {git = "https://github.com/Quin-Darcy/shasher.git", branch = "master"}
-tcp_client = {git = "https://github.com/Quin-Darcy/tcp_client.git", branch = "master"}
+aes256 = {git = "https://github.com/Quin-Darcy/aes256.git", branch = "master" }
 
 [profile.dev]
 overflow-checks = false

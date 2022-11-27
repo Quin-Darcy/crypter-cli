@@ -1,1 +1,1 @@
-/home/nimrafets/projects/rust/binaries/shadir_walker/target/release/shadir_walker: /home/nimrafets/projects/rust/binaries/shadir_walker/src/main.rs
+/home/arbegla/Projects/Rust/binaries/encrypter/target/release/shadir_walker: /home/arbegla/Projects/Rust/binaries/encrypter/src/main.rs
