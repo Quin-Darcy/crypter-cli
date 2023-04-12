@@ -7,7 +7,7 @@ use std::fs::File;
 use std::path::PathBuf;
 use std::fs::OpenOptions;
 use rayon::prelude::*;
-use aes256;
+use aes_crypt;
 
 
 const MAX_DEPTH: u32 = 12;
@@ -44,7 +44,7 @@ impl Node {
                 println!("ENCRYPTING: {}", &y.to_str().unwrap());
                 let path: &str = y.to_str().unwrap();
                 let epath: &str = &(path.to_owned()+".encrypted");
-                aes256::encrypt(path, epath, key); 
+                aes_crypt::encrypt(path, epath, key); 
                 fs::remove_file(path).expect("Failed to delete file");
                 0_u32
             }).collect();
@@ -73,7 +73,7 @@ impl Node {
                 println!("DECRYPTING: {}", &y.to_str().unwrap());
                 let epath: &str = y.to_str().unwrap();
                 let dpath: &str = &epath[..epath.len()-10];
-                aes256::decrypt(epath, dpath, key); 
+                aes_crypt::decrypt(epath, dpath, key); 
                 fs::remove_file(epath).expect("Failed to delete file");
                 0_u32
             }).collect();
@@ -138,12 +138,12 @@ fn make_file_list(enode: &Node) {
 
 fn main() {
     let key_path: &str = "./key.txt";
-    //aes256::gen_key(key_path);
+    aes_crypt::gen_key(key_path);
 
-    let root_path: PathBuf = PathBuf::from("/home/arbegla/test");
-    //let mut enode: Node = Node::new(root_path.clone());
-    let mut dnode: Node = Node::new(root_path.clone());
+    let root_path: PathBuf = PathBuf::from("/home/arbegla/notes");
+    let mut enode: Node = Node::new(root_path.clone());
+    //let mut dnode: Node = Node::new(root_path.clone());
 
-    //enode.encrypt(key_path);
-    dnode.decrypt(key_path);
+    enode.encrypt(key_path);
+    //dnode.decrypt(key_path);
 }

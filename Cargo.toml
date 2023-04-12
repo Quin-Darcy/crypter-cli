@@ -8,8 +8,7 @@ edition = "2021"
 
 [dependencies]
 rayon = "1.5.3"
-shasher = {git = "https://github.com/Quin-Darcy/shasher.git", branch = "master"}
-aes256 = {git = "https://github.com/Quin-Darcy/aes256.git", branch = "master" }
+aes_crypt = {git = "https://github.com/Quin-Darcy/aes_crypt.git", branch = "main"}
 
 [profile.dev]
 overflow-checks = false

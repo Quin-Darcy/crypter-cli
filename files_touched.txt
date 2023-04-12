@@ -1,6 +1,0 @@
-/home/arbegla/test/3
-/home/arbegla/test/2
-/home/arbegla/test/1
-/home/arbegla/test/test2/3
-/home/arbegla/test/test2/2
-/home/arbegla/test/test2/1
