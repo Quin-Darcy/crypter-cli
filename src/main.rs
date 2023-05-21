@@ -170,18 +170,3 @@ fn main() {
         node.decrypt(key_path);
     }
 }
-
-/* 
-fn main() {
-    let key_path: &str = "./key.txt";
-    //aes_crypt::gen_key(key_path);
-
-    let root_path: PathBuf = PathBuf::from("/home/arbegla/projects/rust/binaries/encrypter_cpy");
-    //let mut enode: Node = Node::new(root_path.clone());
-    let mut dnode: Node = Node::new(root_path.clone());
-
-    //enode.encrypt(key_path);
-    dnode.decrypt(key_path);
-}
-
-*/
