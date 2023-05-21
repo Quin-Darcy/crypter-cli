@@ -8,6 +8,7 @@ edition = "2021"
 
 [dependencies]
 rayon = "1.5.3"
+clap = "3"
 aes_crypt = {git = "https://github.com/Quin-Darcy/aes_crypt.git", branch = "main"}
 
 [profile.dev]

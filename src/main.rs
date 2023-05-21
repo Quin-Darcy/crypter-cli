@@ -2,12 +2,12 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 use std::fs;
-use std::io::Write;
-use std::fs::File;
 use std::path::PathBuf;
-use std::fs::OpenOptions;
 use rayon::prelude::*;
 use aes_crypt;
+use clap::{App, Arg};
+use std::path::Path;
+use std::process;
 
 
 const MAX_DEPTH: u32 = 12;
@@ -90,29 +90,6 @@ impl Node {
     }
 }
 
-fn write_file_list(file_list: Vec<&String>, path: &str) {
-    let mut new_file = OpenOptions::new()
-        .write(true)
-        .append(true)
-        .open(path)
-        .unwrap();
-        
-    for file in &file_list {
-        if let Err(e) = writeln!(new_file, "{}", file) {
-            eprintln!("Could not write to file: {}", e);
-        }
-    }
-} 
-
-fn get_file_list<'a>(node: &'a Node, file_list: &mut Vec<&'a String>) {
-    file_list.extend(&node.files);
-    file_list.to_vec();
-
-    for n in &node.folders {
-        get_file_list(&n, file_list);
-    }
-}
-
 fn ls_dir(path: &PathBuf) -> Vec<PathBuf> {
     let mut contents: Vec<PathBuf> = Vec::new();
     let current_dir: fs::ReadDir = fs::read_dir(path).unwrap();
@@ -123,27 +100,88 @@ fn ls_dir(path: &PathBuf) -> Vec<PathBuf> {
     contents
 }
 
-fn make_file_list(enode: &Node) {
-    let mut file_list: Vec<&String> = Vec::new();
-    get_file_list(enode, &mut file_list); 
-    
-    let list_path: &str = "./files_touched.txt";
-    let mut to_file: File = match File::create(list_path) {
-        Ok(_file) => _file,
-        Err(_e) => panic!("Error creating file {}", list_path),
-    };
-    
-    write_file_list(file_list, list_path);
+fn check_arguments(matches: &clap::ArgMatches, key_path: &str, target_path: &str) {
+    if matches.is_present("encrypt") && matches.is_present("decrypt") {
+        eprintln!("Error: Both encrypt and decrypt flags are given, please provide only one.");
+        process::exit(1);
+    }
+
+    if matches.is_present("decrypt") && !Path::new(&key_path).exists() {
+        eprintln!("Error: The provided key file path does not exist.");
+        process::exit(1);
+    }
+
+    if !Path::new(&target_path).exists() {
+        eprintln!("Error: The provided target file or directory does not exist.");
+        process::exit(1);
+    }
+
+    if !matches.is_present("encrypt") && !matches.is_present("decrypt") {
+        eprintln!("Error: Either the encrypt or decrypt flag must be provided.");
+        process::exit(1);
+    }
 }
 
 fn main() {
-    let key_path: &str = "./key.txt";
-    aes_crypt::gen_key(key_path);
+    let matches = App::new("encrypter")
+        .version("1.0")
+        .about("Encrypts or Decrypts a target file or directory")
+        .arg(
+            Arg::with_name("encrypt")
+                .short('e')
+                .long("encrypt")
+                .help("Encrypt the target file or directory"),
+        )
+        .arg(
+            Arg::with_name("decrypt")
+                .short('d')
+                .long("decrypt")
+                .help("Decrypt the target file or directory"),
+        )
+        .arg(
+            Arg::with_name("target")
+                .short('t')
+                .long("target")
+                .value_name("FILE OR DIRECTORY")
+                .help("Specify the target file or directory to be encrypted or decrypted")
+                .takes_value(true)
+                .required(true),
+        )
+        .arg(
+            Arg::with_name("key")
+                .short('k')
+                .long("key")
+                .value_name("KEY FILE")
+                .help("Specify the path where the key file will be saved or can be found")
+                .takes_value(true)
+                .required(true),
+        )
+        .get_matches();
 
-    let root_path: PathBuf = PathBuf::from("/home/arbegla/notes");
-    let mut enode: Node = Node::new(root_path.clone());
-    //let mut dnode: Node = Node::new(root_path.clone());
+    let key_path = matches.value_of("key").unwrap();
+    let target_path = matches.value_of("target").unwrap();
+    check_arguments(&matches, key_path, target_path);
 
-    enode.encrypt(key_path);
-    //dnode.decrypt(key_path);
+    let mut node = Node::new(PathBuf::from(target_path));
+    if matches.is_present("encrypt") {
+        aes_crypt::gen_key(key_path);
+        node.encrypt(key_path);
+    } else {
+        node.decrypt(key_path);
+    }
 }
+
+/* 
+fn main() {
+    let key_path: &str = "./key.txt";
+    //aes_crypt::gen_key(key_path);
+
+    let root_path: PathBuf = PathBuf::from("/home/arbegla/projects/rust/binaries/encrypter_cpy");
+    //let mut enode: Node = Node::new(root_path.clone());
+    let mut dnode: Node = Node::new(root_path.clone());
+
+    //enode.encrypt(key_path);
+    dnode.decrypt(key_path);
+}
+
+*/
